@@ -16,7 +16,7 @@ end
 begin
     t.write(files.join("\n") + "\n")
     t.flush
-    system "$EDITOR #{t.path}"
+    system ENV['EDITOR'], t.path
 
     # The editor might do an atomic rename-save, breaking our fd ref.
     f = File.open(t.path) 
