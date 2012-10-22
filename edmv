@@ -14,6 +14,7 @@ def run x
 end
 
 begin
+    tmpdir = nil
     t.write(files.join("\n") + "\n")
     t.flush
     system ENV['EDITOR'], t.path
@@ -43,5 +44,5 @@ begin
     end
 ensure
     t.close
-    Dir.rmdir tmpdir
+    Dir.rmdir tmpdir unless tmpdir.nil?
 end
