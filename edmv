@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+
+require 'tempfile'
+require 'fileutils'
+
+files = ARGV
+t = Tempfile.new('edmv')
+
+def run x
+    #puts x
+    system x
+end
+
+begin
+    t.write(files.join("\n") + "\n")
+    t.flush
+    system "$EDITOR #{t.path}"
+
+    # The editor might do an atomic rename-save, breaking our fd ref.
+    f = File.open(t.path) 
+    t.unlink
+
+    new_names = f.read.split("\n")
+    abort "file count doesn't match" if files.length != new_names.length
+    abort "duplicate target names" if new_names.uniq != new_names
+
+    # Move to a new directory first to prevent collisions between the
+    # old set and new set of filenames.
+    tmpdir = File.basename(f.path) + "-mvdir"
+    Dir.mkdir tmpdir
+
+    map = files.zip(new_names).find_all { |a,b| a != b }
+    unless map.empty?
+        map.each do |from,to|
+            full_to = File.join(tmpdir, to)
+            FileUtils.mv from, full_to #, :verbose => true
+            puts "#{from} -> #{to}"
+            #puts "mv '#{from}' '#{full_to}'"
+        end
+        run "mv -n '#{tmpdir}'/* ."
+    end
+ensure
+    t.close
+    Dir.rmdir tmpdir
+end
