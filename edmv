@@ -6,6 +6,8 @@ require 'fileutils'
 files = ARGV
 t = Tempfile.new('edmv')
 
+abort "usage: edmv files" if files.empty?
+
 def run x
     #puts x
     system x
