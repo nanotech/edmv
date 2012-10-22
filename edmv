@@ -31,9 +31,8 @@ begin
     unless map.empty?
         map.each do |from,to|
             full_to = File.join(tmpdir, to)
-            FileUtils.mv from, full_to #, :verbose => true
+            FileUtils.mv from, full_to
             puts "#{from} -> #{to}"
-            #puts "mv '#{from}' '#{full_to}'"
         end
         system "mv -n '#{tmpdir}'/* ."
     end
