@@ -8,11 +8,6 @@ t = Tempfile.new('edmv')
 
 abort "usage: edmv files" if files.empty?
 
-def run x
-    #puts x
-    system x
-end
-
 begin
     tmpdir = nil
     t.write(files.join("\n") + "\n")
@@ -40,7 +35,7 @@ begin
             puts "#{from} -> #{to}"
             #puts "mv '#{from}' '#{full_to}'"
         end
-        run "mv -n '#{tmpdir}'/* ."
+        system "mv -n '#{tmpdir}'/* ."
     end
 ensure
     t.close
