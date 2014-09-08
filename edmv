@@ -12,7 +12,7 @@ begin
     tmpdir = nil
     t.write(files.join("\n") + "\n")
     t.flush
-    system ENV['EDITOR'], t.path
+    abort "editor failed: #$?" unless system ENV['EDITOR'], t.path
 
     # The editor might do an atomic rename-save, breaking our fd ref.
     f = File.open(t.path) 
