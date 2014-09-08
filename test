@@ -12,6 +12,7 @@ $test_data = 'testdata'
 
 if ARGV[0] != 'editor'
   require 'minitest/autorun'
+  require 'fileutils'
 
   class TestEdmv < MiniTest::Unit::TestCase
     def setup
@@ -45,6 +46,7 @@ if ARGV[0] != 'editor'
 
     def run_rename_test_with renames
       renames.each do |s,t|
+        FileUtils.mkdir_p File.dirname(s)
         # Write each file's original name so we can check
         # that it got moved to the correct location after.
         File.open(s, 'w') { |f| f.write(s) }
@@ -87,6 +89,12 @@ if ARGV[0] != 'editor'
     def test_rename_dot
       run_rename_test_with({
         '.foo' => '.bar',
+      })
+    end
+
+    def test_rename_inside_dirs
+      run_rename_test_with({
+        'a/b' => 'a/d',
       })
     end
   end

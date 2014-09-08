@@ -25,13 +25,13 @@ begin
     # Move to a new directory first to prevent collisions between the
     # old set and new set of filenames.
     tmpdir = File.basename(f.path) + "-mvdir"
-    Dir.mkdir tmpdir
 
     map = files.zip(new_names).find_all { |a,b| a != b }
     unless map.empty?
         map.map do |from,to|
             temp_to = File.join(tmpdir, to)
             puts "#{from} -> #{to}"
+            FileUtils.mkdir_p File.dirname(temp_to)
             FileUtils.mv from, temp_to
             [temp_to, to]
         end.each do |temp_to, to|
@@ -42,10 +42,10 @@ begin
                 abort "target file already exists: #{to.inspect}"
             else
                 FileUtils.mv temp_to, to
+                Dir.rmdir File.dirname(temp_to) rescue Errno::ENOTEMPTY
             end
         end
     end
 ensure
     t.close
-    Dir.rmdir tmpdir unless tmpdir.nil?
 end
