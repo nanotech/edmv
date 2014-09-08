@@ -1,4 +1,4 @@
-# edmv
+# edmv [![Build Status](https://travis-ci.org/nanotech/edmv.svg?branch=master)](https://travis-ci.org/nanotech/edmv)
 
 Batch file renaming with your favourite `$EDITOR`.
 
