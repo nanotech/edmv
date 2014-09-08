@@ -1,0 +1,93 @@
+#!/usr/bin/env ruby
+
+def hex s
+  s.unpack('H*').first
+end
+
+def unhex s
+  [s].pack('H*')
+end
+
+$test_data = 'testdata'
+
+if ARGV[0] != 'editor'
+  require 'minitest/autorun'
+
+  class TestEdmv < MiniTest::Unit::TestCase
+    def setup
+      Dir.mkdir $test_data
+      Dir.chdir $test_data
+    end
+
+    def teardown
+      Dir.chdir '..'
+      system 'rm', '-r', $test_data
+    end
+
+    def with_editor new_contents, &block
+      prev_editor = ENV['EDITOR']
+      test_editor = './ted'
+      ENV['EDITOR'] = test_editor
+      File.open(test_editor, 'w') { |f|
+        f.write %Q{#!/bin/sh\n../test editor #{hex(new_contents)} "$1"\n}
+        f.chmod 0755
+      }
+      block.call
+      File.unlink test_editor
+      ENV['EDITOR'] = prev_editor
+    end
+
+    def edmv renames
+      with_editor(renames.values.join("\n")) do
+        system '../edmv', *renames.keys, :out => ['../test.log', 'a']
+      end
+    end
+
+    def run_rename_test_with renames
+      renames.each do |s,t|
+        # Write each file's original name so we can check
+        # that it got moved to the correct location after.
+        File.open(s, 'w') { |f| f.write(s) }
+      end
+      edmv renames
+      renames.each do |s,t|
+        assert File.exist?(t), "#{t.inspect} must exist"
+        File.read(t).must_equal s
+      end
+    end
+
+    def test_editor
+      new_contents = "blah\nfoo\n"
+      with_editor(new_contents) do
+        out = 'edout'
+        system ENV['EDITOR'], out
+        File.read(out).must_equal new_contents
+      end
+    end
+
+    def test_rename_simple
+      run_rename_test_with({
+        'foo' => 'bar',
+      })
+    end
+
+    def test_rename_unchanged
+      run_rename_test_with({
+        'hello' => 'hello',
+      })
+    end
+
+    def test_rename_swap
+      run_rename_test_with({
+        'hello' => 'howdy',
+        'howdy' => 'hello',
+      })
+    end
+  end
+else
+  abort 'wrong number of args' if ARGV.length != 3
+  new_contents = unhex(ARGV[1])
+  File.open(ARGV[2], "w") do |names_file|
+    names_file.write new_contents
+  end
+end
