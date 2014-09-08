@@ -29,12 +29,21 @@ begin
 
     map = files.zip(new_names).find_all { |a,b| a != b }
     unless map.empty?
-        map.each do |from,to|
-            full_to = File.join(tmpdir, to)
-            FileUtils.mv from, full_to
+        map.map do |from,to|
+            temp_to = File.join(tmpdir, to)
             puts "#{from} -> #{to}"
+            FileUtils.mv from, temp_to
+            [temp_to, to]
+        end.each do |temp_to, to|
+            # Perform a separate iteration to prevent
+            # overlaping filenames in the source and target
+            # set from clobbering each other.
+            if File.exist? to
+                abort "target file already exists: #{to.inspect}"
+            else
+                FileUtils.mv temp_to, to
+            end
         end
-        system "mv -n '#{tmpdir}'/* ."
     end
 ensure
     t.close

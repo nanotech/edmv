@@ -83,6 +83,12 @@ if ARGV[0] != 'editor'
         'howdy' => 'hello',
       })
     end
+
+    def test_rename_dot
+      run_rename_test_with({
+        '.foo' => '.bar',
+      })
+    end
   end
 else
   abort 'wrong number of args' if ARGV.length != 3
